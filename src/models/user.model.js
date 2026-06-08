@@ -2,10 +2,14 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
+    profile_photo : {
+      type: String,
+      default: '',
+      required:false,
+    },
     username: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
       minlength: 3,
       maxlength: 30,
@@ -27,7 +31,6 @@ const userSchema = new mongoose.Schema(
 );
 
 // Index for fast lookups
-userSchema.index({ username: 1 });
 userSchema.index({ email: 1 });
 
 export default mongoose.model('User', userSchema);

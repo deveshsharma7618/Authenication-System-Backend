@@ -1,12 +1,20 @@
 import { Router } from "express";
-import bcrypt from 'bcryptjs'
-import User from '../models/user.model.js'
-import jwt from 'jsonwebtoken'
-import config from '../config/env.js';
+import bcrypt from "bcryptjs";
+import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
+import config from "../config/env.js";
+import sendRegisterEmail from "../services/sendRegisterEmail.js";
+import sendLoginEmail from "../services/sendLoginEmail.js";
+import uploadProfilePhoto from "../utils/uploadProfilePhoto.js";
+import multer from "multer";
 
-export const register =  async (req, res) => {
+export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    console.log(req.file);
+
+    const file = req.file;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -15,6 +23,7 @@ export const register =  async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
 
+
     const newUser = new User({
       username,
       email,
@@ -22,6 +31,7 @@ export const register =  async (req, res) => {
     });
 
     await newUser.save();
+    // await sendRegisterEmail(email, username);
 
     res.status(201).json({
       success: true,
@@ -31,19 +41,27 @@ export const register =  async (req, res) => {
         email: newUser.email,
       },
     });
-
   } catch (error) {
-    res.status(500).json({ error: error.message});
+    res.status(500).json({ error: error.message });
   }
 };
-
 
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const userAgent = req.get("user-agent") || "Unknown device";
+    const forwardedFor = req.headers["x-forwarded-for"];
+    const ipAddress = Array.isArray(forwardedFor)
+      ? forwardedFor[0]
+      : forwardedFor?.split(",")[0]?.trim() ||
+        req.ip ||
+        req.socket?.remoteAddress ||
+        "Unknown";
 
     console.log("Login attempt with email:", email);
-    console.log(password ? "Password provided " + password : "No password provided");
+    console.log(
+      password ? "Password provided " + password : "No password provided",
+    );
 
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
@@ -51,7 +69,6 @@ export const login = async (req, res) => {
     }
 
     console.log("User found:", user);
-
 
     const isMatch = await bcrypt.compare(password, user.password);
 
@@ -68,14 +85,21 @@ export const login = async (req, res) => {
       config.jwtSecret,
       {
         expiresIn: config.jwtExpiresIn,
-      }
+      },
     );
-
 
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
+    });
+
+    void sendLoginEmail(user.email, user.username, {
+      ipAddress,
+      userAgent,
+      loginAt: new Date(),
+    }).catch((error) => {
+      console.error("Error sending login email:", error);
     });
 
     res.status(200).json({
@@ -86,14 +110,12 @@ export const login = async (req, res) => {
         email: user.email,
       },
     });
-
   } catch (error) {
-    res.status(500).json({ error: error.message});
+    res.status(500).json({ error: error.message });
   }
 };
 
-
 export default {
   register,
-  login
+  login,
 };

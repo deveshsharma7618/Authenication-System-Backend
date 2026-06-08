@@ -16,12 +16,21 @@ if(!process.env.JWT_SECRET) {
   process.exit(1);
 }
 
+if(!process.env.JWT_EXPIRES_IN) {
+  console.error('Warning: JWT_EXPIRES_IN is not set. Please set it in the .env file.');
+}
+
+if(!process.env.GOOGLE_EMAIL || !process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET || !process.env.GOOGLE_REFRESH_TOKEN) {
+  console.error('Warning: Google OAuth2 credentials are not fully set. Please set GOOGLE_EMAIL, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN in the .env file.');
+  process.exit(1);
+}
+
 
 const config = {
   port: process.env.PORT,
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
-  jwtExpiresIn: '1h', // You can adjust this as needed
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN, // You can adjust this as needed
 };
 
 export default Object.freeze(config);
