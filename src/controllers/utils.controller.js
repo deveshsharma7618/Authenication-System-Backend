@@ -1,9 +1,7 @@
 import User from "../models/user.model.js";
 
 const deleteUser = async (req, res) => {
-    console.log(req.user);
     const email = req.user.email;
-    console.log(`User with email ${email} has been deleted.`);
     const requiredUser = await User.findOneAndDelete({ email  : email });
 
     req.cookies = '';
@@ -17,10 +15,8 @@ const deleteUser = async (req, res) => {
 const updateUser = async (req, res) => {
     const email = req.user.email;
     const { username } = req.body;
-    const { filname } = req.filname;
-    console.log(filename)
 
-    const updatedUser = await User.findOneAndUpdate({ email }, { username }, { new: true });
+    const updatedUser = await User.findOneAndUpdate({ email }, { username }, { returnDocument: 'after' });
 
     res.json({
         success: true,
@@ -32,7 +28,6 @@ const updateUser = async (req, res) => {
 const updateProfilePhoto = async (req, res) => {
     const email = req.user.email;
     const filename = req.filename;
-    console.log(filename, email)
     const updatedUser = await User.findOneAndUpdate({ email }, { profile_photo : filename }, {returnDocument: 'after'});
     res.json({
         success: true,

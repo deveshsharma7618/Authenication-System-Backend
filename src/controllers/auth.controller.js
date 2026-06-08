@@ -11,19 +11,12 @@ import multer from "multer";
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    console.log(req.file);
-
-    const file = req.file;
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ error: "Email already exists" });
     }
 
     const hash = await bcrypt.hash(password, 10);
-
-
     const newUser = new User({
       username,
       email,
@@ -31,7 +24,7 @@ export const register = async (req, res) => {
     });
 
     await newUser.save();
-    // await sendRegisterEmail(email, username);
+    await sendRegisterEmail(email, username);
 
     res.status(201).json({
       success: true,
@@ -58,21 +51,14 @@ export const login = async (req, res) => {
         req.socket?.remoteAddress ||
         "Unknown";
 
-    console.log("Login attempt with email:", email);
-    console.log(
-      password ? "Password provided " + password : "No password provided",
-    );
-
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    console.log("User found:", user);
 
     const isMatch = await bcrypt.compare(password, user.password);
 
-    console.log("Password match:", isMatch);
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid credentials" });
     }

@@ -16,8 +16,6 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/utils', utilsRoutes);
-console.log(path.join(process.cwd(), 'uploads/profile_photos'))
-
 app.use('/profile_photos',  express.static(path.join(process.cwd(), 'uploads/profile_photos')));
 
 export default app;
