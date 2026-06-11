@@ -2,6 +2,7 @@ import express from 'express'
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/auth.routes.js';
 import utilsRoutes from './routes/utils.routes.js';
+import booksRoutes from './routes/books.routes.js';
 import { sendEmail } from './utils/sendEmail.js';
 import path from 'path';
 
@@ -17,5 +18,6 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/utils', utilsRoutes);
 app.use('/profile_photos',  express.static(path.join(process.cwd(), 'uploads/profile_photos')));
+app.use('/api/books', booksRoutes);
 
 export default app;

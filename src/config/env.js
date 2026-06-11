@@ -25,12 +25,18 @@ if(!process.env.GOOGLE_EMAIL || !process.env.GOOGLE_CLIENT_ID || !process.env.GO
   process.exit(1);
 }
 
+if(!process.env.ADMIN_TOKEN) {
+  console.error('Warning: ADMIN_TOKEN is not set. Please set it in the .env file.');
+  process.exit(1);
+}
+
 
 const config = {
   port: process.env.PORT,
   mongoUri: process.env.MONGODB_URI,
   jwtSecret: process.env.JWT_SECRET,
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN, // You can adjust this as needed
+  jwtExpiresIn: process.env.JWT_EXPIRES_IN, 
+  adminToken: process.env.ADMIN_TOKEN,
 };
 
 export default Object.freeze(config);
